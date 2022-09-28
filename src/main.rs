@@ -95,7 +95,25 @@ mod tests {
 	}
 
 	#[test]
-	fn splitter() {
+	fn split_invalid_empty() {
+		let s = String::from("");
+		assert_eq!(split(s), Err(SplitError));
+	}
+
+	#[test]
+	fn split_invalid_excess_numbers() {
+		let s = String::from("523,1,2");
+		assert_eq!(split(s), Err(SplitError));
+	}
+
+	#[test]
+	fn split_invalid_single_number() {
+		let s = String::from("523");
+		assert_eq!(split(s), Err(SplitError));
+	}
+
+	#[test]
+	fn split_valid() {
 		let s = String::from("52,3");
 		let fifty_two = String::from("52");
 		let three = String::from("3");
@@ -103,13 +121,34 @@ mod tests {
 	}
 
 	#[test]
-	fn parser() {
+	fn parse_b() {
+		let ten_thousand = String::from("1");
+		let four = String::from("b");
+		assert_eq!(parse((ten_thousand, four)), Err(ParseError("b".to_owned())));
+	}
+
+	#[test]
+	fn parse_a() {
+		let ten_thousand = String::from("a");
+		let four = String::from("4");
+		assert_eq!(parse((ten_thousand, four)), Err(ParseError("a".to_owned())));
+	}
+
+	#[test]
+	fn parse_ten_thousand_and_four() {
+		let ten_thousand = String::from("10000");
+		let four = String::from("4");
+		assert_eq!(parse((ten_thousand, four)), Ok((10000, 4)));
+	}
+
+	#[test]
+	fn parse_one() {
 		let one = String::from("1");
 		assert_eq!(parse((one.clone(), one)), Ok((1, 1)));
 	}
 
 	#[test]
-	fn performer() {
+	fn perform_works() {
 		assert_eq!(perform("5,1".to_owned()), Ok(5));
 	}
 }
