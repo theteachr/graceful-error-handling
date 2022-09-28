@@ -75,7 +75,7 @@ fn main() {
 	};
 
 	match safe_div((1, 1)) {
-		Ok(value) => println!("Result of safe divition: {value}"),
+		Ok(value) => println!("Result of safe division: {value}"),
 		Err(_) => eprintln!("Can't divide by zero. :<"),
 	}
 
