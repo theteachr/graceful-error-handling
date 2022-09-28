@@ -65,30 +65,19 @@ fn perform(input: String) -> Result<i32, Error> {
 	Ok(safe_div(parse(split(input)?)?)?)
 }
 
-fn main() {
-	let input = match std::env::args().nth(1) {
-		Some(x) => x,
-		None => {
-			eprintln!("No input was given :<");
-			std::process::exit(-1);
-		}
-	};
-
-	match safe_div((1, 1)) {
-		Ok(value) => println!("Result of safe division: {value}"),
-		Err(_) => eprintln!("Can't divide by zero. :<"),
-	}
+fn main() -> Result<(), &'static str> {
+	let input = std::env::args().nth(1).ok_or("No input given :<")?;
 
 	println!("Input: {input}");
 
 	match perform(input) {
 		Ok(value) => println!("Output: {value}"),
-		Err(e) => match e {
-			Error::Split => eprintln!("Couldn't split. :<"),
-			Error::Parse(s) => eprintln!("'{s}' is not a number. :o"),
-			Error::DivisionByZero => eprintln!("Can't divide by zero. :<"),
-		},
+        Err(Error::Split) => eprintln!("Couldn't split. :<"),
+		Err(Error::Parse(s)) => eprintln!("'{s}' is not a number. :o"),
+		Err(Error::DivisionByZero) => eprintln!("Can't divide by zero. :<"),
 	}
+
+    Ok(())
 }
 
 #[cfg(test)]
