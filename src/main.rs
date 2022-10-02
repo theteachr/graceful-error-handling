@@ -32,24 +32,20 @@ impl From<DivisionByZeroError> for Error {
 	}
 }
 
-fn split(s: String) -> Result<(String, String), SplitError> {
-	let mut ss = s
-		.split(',')
-		.take(3)
-		.map(String::from)
-		.collect::<Vec<String>>();
+fn split(s: &str) -> Result<(&str, &str), SplitError> {
+	let mut ss = s.split(',');
 
-	match (ss.pop(), ss.pop(), ss.pop()) {
-		(Some(a), Some(b), None) => Ok((b, a)),
+	match (ss.next(), ss.next(), ss.next()) {
+		(Some(a), Some(b), None) => Ok((a, b)),
 		_ => Err(SplitError),
 	}
 }
 
-fn parse((a, b): (String, String)) -> Result<(i32, i32), ParseError> {
+fn parse((a, b): (&str, &str)) -> Result<(i32, i32), ParseError> {
 	match (a.parse::<i32>(), b.parse::<i32>()) {
 		(Ok(x), Ok(y)) => Ok((x, y)),
-		(Err(_), _) => Err(ParseError(a)),
-		(_, Err(_)) => Err(ParseError(b)),
+		(Err(_), _) => Err(ParseError(a.to_string())),
+		(_, Err(_)) => Err(ParseError(b.to_string())),
 	}
 }
 
@@ -61,7 +57,7 @@ fn safe_div((a, b): (i32, i32)) -> Result<i32, DivisionByZeroError> {
 	Ok(a / b)
 }
 
-fn perform(input: String) -> Result<i32, Error> {
+fn perform(input: &str) -> Result<i32, Error> {
 	Ok(safe_div(parse(split(input)?)?)?)
 }
 
@@ -70,14 +66,14 @@ fn main() -> Result<(), &'static str> {
 
 	println!("Input: {input}");
 
-	match perform(input) {
+	match perform(&input) {
 		Ok(value) => println!("Output: {value}"),
-        Err(Error::Split) => eprintln!("Couldn't split. :<"),
+		Err(Error::Split) => eprintln!("Couldn't split. :<"),
 		Err(Error::Parse(s)) => eprintln!("'{s}' is not a number. :o"),
 		Err(Error::DivisionByZero) => eprintln!("Can't divide by zero. :<"),
 	}
 
-    Ok(())
+	Ok(())
 }
 
 #[cfg(test)]
@@ -96,59 +92,56 @@ mod tests {
 
 	#[test]
 	fn split_invalid_empty() {
-		let s = String::from("");
-		assert_eq!(split(s), Err(SplitError));
+		assert_eq!(split(""), Err(SplitError));
 	}
 
 	#[test]
 	fn split_invalid_excess_numbers() {
-		let s = String::from("523,1,2");
-		assert_eq!(split(s), Err(SplitError));
+		assert_eq!(split("523,1,2"), Err(SplitError));
 	}
 
 	#[test]
 	fn split_invalid_single_number() {
-		let s = String::from("523");
-		assert_eq!(split(s), Err(SplitError));
+		assert_eq!(split("523"), Err(SplitError));
 	}
 
 	#[test]
 	fn split_valid() {
-		let s = String::from("52,3");
-		let fifty_two = String::from("52");
-		let three = String::from("3");
+		let s = "52,3";
+		let fifty_two = "52";
+		let three = "3";
 		assert_eq!(split(s), Ok((fifty_two, three)));
 	}
 
 	#[test]
 	fn parse_b() {
-		let ten_thousand = String::from("1");
-		let four = String::from("b");
+		let ten_thousand = "1";
+		let four = "b";
 		assert_eq!(parse((ten_thousand, four)), Err(ParseError("b".to_owned())));
 	}
 
 	#[test]
 	fn parse_a() {
-		let ten_thousand = String::from("a");
-		let four = String::from("4");
+		let ten_thousand = "a";
+		let four = "4";
 		assert_eq!(parse((ten_thousand, four)), Err(ParseError("a".to_owned())));
 	}
 
 	#[test]
 	fn parse_ten_thousand_and_four() {
-		let ten_thousand = String::from("10000");
-		let four = String::from("4");
+		let ten_thousand = "10000";
+		let four = "4";
 		assert_eq!(parse((ten_thousand, four)), Ok((10000, 4)));
 	}
 
 	#[test]
 	fn parse_one() {
-		let one = String::from("1");
-		assert_eq!(parse((one.clone(), one)), Ok((1, 1)));
+		let one = "1";
+		assert_eq!(parse((one, one)), Ok((1, 1)));
 	}
 
 	#[test]
 	fn perform_works() {
-		assert_eq!(perform("5,1".to_owned()), Ok(5));
+		assert_eq!(perform("5,1"), Ok(5));
 	}
 }
